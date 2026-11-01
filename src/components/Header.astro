@@ -1,0 +1,49 @@
+---
+import { url } from '../lib/url';
+
+const links = [
+  { href: url('/'), label: 'Home' },
+  { href: url('/blog/'), label: 'Blog' },
+  { href: url('/about/'), label: 'About' },
+];
+
+const current = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <a class="logo" href={url('/')}>Astro Test</a>
+  <nav>
+    {links.map((link) => (
+      <a href={link.href} aria-current={current === link.href ? 'page' : undefined}>
+        {link.label}
+      </a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .logo {
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  nav {
+    display: flex;
+    gap: 1.25rem;
+  }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  nav a[aria-current='page'] {
+    color: var(--accent);
+    font-weight: 600;
+  }
+</style>

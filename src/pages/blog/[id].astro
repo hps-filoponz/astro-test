@@ -1,0 +1,26 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+import { url } from '../../lib/url';
+
+// Tells Astro which post pages to build.
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const fmt = new Intl.DateTimeFormat('en-GB', { dateStyle: 'long' });
+---
+
+<Base title={post.data.title} description={post.data.description}>
+  <p class="meta">{fmt.format(post.data.date)}</p>
+  <h1>{post.data.title}</h1>
+  <Content />
+  <p><a href={url('/blog/')}>Back to all posts</a></p>
+</Base>
+
+<style>
+  .meta { color: var(--muted); margin: 0 0 0.5rem; }
+</style>

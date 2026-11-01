@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { url } from '../lib/url';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+<Base title="Home" description="A test site for learning Astro.">
+  <h1>Astro test site</h1>
+  <p>
+    This page is built from <code>src/pages/index.astro</code>. Each file in
+    <code>src/pages</code> becomes a URL.
+  </p>
+
+  <h2>Latest posts</h2>
+  <ul>
+    {posts.map((post) => (
+      <li>
+        <a href={url(`/blog/${post.id}/`)}>{post.data.title}</a>
+      </li>
+    ))}
+  </ul>
+</Base>
