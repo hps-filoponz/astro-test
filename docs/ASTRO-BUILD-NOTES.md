@@ -89,3 +89,17 @@ Review, cut and correct before using them as the skill's source.
 - astro preview reads the config at start: restart it with the same DEPLOY_TARGET as the build.
 - Grid columns with images: use minmax(0, 1fr), or the image's intrinsic width squashes the other column.
 - Icons from a child component need :global() selectors in the parent's scoped CSS.
+
+## Forms (Fluent Forms Pro)
+
+- wordpress/astro-fluentforms.php in mu-plugins. Route registered on the Fluent Forms router
+  (fluentform/loaded) at /wp-json/fluentform/v1/astro-submit, calling
+  SubmissionHandlerService::handleSubmission($data, $formId), as in the FF developer docs.
+- Fluent Forms does the validation, entry storage, email notifications and Pro integrations.
+- FF webhooks are outbound only (FF sends entries elsewhere); they cannot receive from Astro.
+- wp-config.php: ASTRO_FLUENT_FORMS = allowed form IDs (stops posts to e.g. registration forms).
+- Extra checks before FF: Origin allow-list, honeypot "website", _started at least 3 s, 5 per IP per 10 min.
+- Astro form posts FormData (no CORS preflight) with fields named data[{Name Attribute}],
+  plus form_id, _started (set by JS on load, as the page is prebuilt) and _page.
+- FF validation errors come back per field; the page shows them under each input.
+- Replaced the earlier custom astro-forms.php plugin (own entries CPT + wp_mail).

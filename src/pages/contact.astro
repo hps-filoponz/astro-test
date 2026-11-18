@@ -4,8 +4,11 @@ import PageHeader from '../components/PageHeader.astro';
 import Icon from '../components/Icon.astro';
 import { CMS_URL } from '../lib/wordpress';
 
-// Submissions go to the Astro Forms plugin on the headless WordPress site
-const endpoint = `${CMS_URL}/wp-json/astro/v1/form/contact`;
+// Submissions go to Fluent Forms on the headless WordPress site,
+// through the Astro Fluent Forms mu-plugin.
+const endpoint = `${CMS_URL}/wp-json/fluentform/v1/astro-submit`;
+// The Fluent Forms form ID (Fluent Forms > All Forms)
+const FLUENT_FORM_ID = 0;
 
 const details = [
   { icon: 'map-pin', title: 'Roastery', text: 'Unit 4, Riverside Yard' },
@@ -37,24 +40,25 @@ const details = [
 
       <form class="card form" id="contact-form" action={endpoint} method="post" novalidate>
         <div class="row">
-          <label>Name <input name="name" type="text" autocomplete="name" required maxlength="200" /><span class="err" data-for="name"></span></label>
-          <label>Email <input name="email" type="email" autocomplete="email" required maxlength="200" /><span class="err" data-for="email"></span></label>
+          <label>Name <input name="data[full_name]" type="text" autocomplete="name" required maxlength="200" /><span class="err" data-for="full_name"></span></label>
+          <label>Email <input name="data[email]" type="email" autocomplete="email" required maxlength="200" /><span class="err" data-for="email"></span></label>
         </div>
         <label>
           Topic
-          <select name="topic">
+          <select name="data[topic]">
             <option>An order</option>
             <option>Subscriptions</option>
             <option>Wholesale</option>
             <option>Something else</option>
           </select>
         </label>
-        <label>Message <textarea name="message" rows="5" required maxlength="5000"></textarea><span class="err" data-for="message"></span></label>
+        <label>Message <textarea name="data[message]" rows="5" required maxlength="5000"></textarea><span class="err" data-for="message"></span></label>
 
         <!-- Spam traps: real people never see or fill these -->
         <div class="hp" aria-hidden="true">
           <label>Website <input name="website" type="text" tabindex="-1" autocomplete="off" /></label>
         </div>
+        <input type="hidden" name="form_id" value={FLUENT_FORM_ID} />
         <input type="hidden" name="_started" />
         <input type="hidden" name="_page" />
 
@@ -90,8 +94,8 @@ const details = [
 
       // Quick checks in the browser first; WordPress checks again.
       const local: Record<string, string> = {};
-      for (const name of ['name', 'email', 'message']) {
-        const field = form.elements.namedItem(name) as HTMLInputElement;
+      for (const name of ['full_name', 'email', 'message']) {
+        const field = form.elements.namedItem(`data[${name}]`) as HTMLInputElement;
         if (!field.value.trim()) local[name] = 'This field is required.';
         else if (name === 'email' && !field.validity.valid) local[name] = 'Please enter a valid email address.';
       }
