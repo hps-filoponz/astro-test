@@ -1,0 +1,36 @@
+---
+import Icon from './Icon.astro';
+import { faqs } from '../data/site';
+---
+
+<div class="faq">
+  {faqs.map((item, i) => (
+    <details open={i === 0}>
+      <summary>
+        {item.q}
+        <Icon name="plus" size={20} class="chev" />
+      </summary>
+      <p>{item.a}</p>
+    </details>
+  ))}
+</div>
+
+<style>
+  .faq { border-top: 1px solid var(--line); }
+  details { border-bottom: 1px solid var(--line); }
+  summary {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary :global(.chev) { flex-shrink: 0; color: var(--accent); transition: transform 0.25s; }
+  details[open] summary :global(.chev) { transform: rotate(45deg); }
+  p { color: var(--muted); padding-bottom: 1.2rem; margin: 0; max-width: 40rem; }
+</style>

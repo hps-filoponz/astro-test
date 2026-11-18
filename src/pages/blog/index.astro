@@ -1,5 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Icon from '../../components/Icon.astro';
 import { getCollection } from 'astro:content';
 import { url } from '../../lib/url';
 
@@ -10,19 +12,34 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 const fmt = new Intl.DateTimeFormat('en-GB', { dateStyle: 'long' });
 ---
 
-<Base title="Blog" description="All posts.">
-  <h1>Blog</h1>
-  {posts.map((post) => (
-    <article>
-      <h2><a href={url(`/blog/${post.id}/`)}>{post.data.title}</a></h2>
-      <p class="meta">{fmt.format(post.data.date)}</p>
-      <p>{post.data.description}</p>
-    </article>
-  ))}
+<Base title="Journal" description="Notes from the roastery.">
+  <PageHeader eyebrow="Journal" title="Notes from the roastery" intro="Brewing tips, new coffees and what we're learning." />
+
+  <section class="section">
+    <div class="container grid grid--2">
+      {posts.map((post) => (
+        <a class="card post" href={url(`/blog/${post.id}/`)}>
+          <p class="meta">{fmt.format(post.data.date)}</p>
+          <h2>{post.data.title}</h2>
+          <p>{post.data.description}</p>
+          <span class="more">Read more <Icon name="arrow-right" size={18} /></span>
+        </a>
+      ))}
+    </div>
+  </section>
 </Base>
 
 <style>
-  article { margin-bottom: 2rem; }
-  h2 { margin-bottom: 0.2rem; font-size: 1.3rem; }
-  .meta { color: var(--muted); font-size: 0.9rem; margin: 0; }
+  .post {
+    display: block;
+    padding: 1.75rem;
+    color: var(--ink);
+    text-decoration: none;
+    transition: transform 0.25s;
+  }
+  .post:hover { transform: translateY(-3px); }
+  .post h2 { font-size: 1.5rem; }
+  .post p { color: var(--muted); }
+  .meta { font-size: 0.85rem; margin-bottom: 0.4rem; }
+  .more { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--accent); font-weight: 600; }
 </style>

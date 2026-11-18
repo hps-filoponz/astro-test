@@ -1,13 +1,18 @@
 ---
 import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+import { url } from '../lib/url';
 
 interface Props {
   title: string;
   description?: string;
 }
 
-const { title, description = 'An Astro experiment.' } = Astro.props;
+const { title, description = 'Small-batch coffee, roasted weekly. A demo site built with Astro.' } =
+  Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const fullTitle = title === 'Home' ? 'Northbank Roasters | Small-batch coffee' : `${title} | Northbank Roasters`;
 ---
 
 <!doctype html>
@@ -15,50 +20,22 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} | Astro Test</title>
+    <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <meta property="og:title" content={title} />
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta name="robots" content="noindex" />
   </head>
   <body>
-    <div class="wrap">
-      <Header />
-      <main>
-        <slot />
-      </main>
-      <footer>Built with Astro {Astro.generator.replace('Astro v', 'v')}</footer>
-    </div>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
   </body>
 </html>
-
-<style is:global>
-  :root {
-    --ink: #1b1d22;
-    --muted: #5d6270;
-    --line: #e4e6eb;
-    --accent: #e8590c;
-    --bg: #fbfaf8;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font: 17px/1.6 system-ui, -apple-system, 'Segoe UI', sans-serif;
-  }
-  .wrap {
-    max-width: 46rem;
-    margin: 0 auto;
-    padding: 0 1.25rem;
-  }
-  main { padding: 2.5rem 0; min-height: 60vh; }
-  h1 { font-size: 2.2rem; line-height: 1.15; margin: 0 0 1rem; }
-  a { color: var(--accent); }
-  footer {
-    padding: 1.5rem 0 2.5rem;
-    border-top: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
-</style>

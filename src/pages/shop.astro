@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import ProductCard from '../components/ProductCard.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { products } from '../data/site';
+
+const roasts = ['All', 'Light', 'Medium', 'Dark'];
+---
+
+<Base title="Shop" description="Single origins and blends, roasted weekly in small batches.">
+  <PageHeader
+    eyebrow="Shop"
+    title="Our coffee"
+    intro="Roasted every Monday. Whole bean or ground to order, in 250g compostable bags."
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="filters" role="group" aria-label="Filter by roast">
+        {roasts.map((r, i) => (
+          <button type="button" data-filter={r} aria-pressed={i === 0 ? 'true' : 'false'}>
+            {r}
+          </button>
+        ))}
+      </div>
+      <p class="count" aria-live="polite"><span id="count">{products.length}</span> coffees</p>
+      <div class="grid grid--4" id="products">
+        {products.map((product) => <ProductCard product={product} />)}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>
+
+<script>
+  // Small client-side filter. Everything else on the page is static HTML.
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  const cards = document.querySelectorAll<HTMLElement>('#products [data-roast]');
+  const count = document.getElementById('count');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      let shown = 0;
+      cards.forEach((card) => {
+        const match = filter === 'All' || card.dataset.roast === filter;
+        card.hidden = !match;
+        if (match) shown++;
+      });
+      if (count) count.textContent = String(shown);
+    });
+  });
+</script>
+
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  .filters button {
+    font: inherit;
+    font-weight: 600;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .filters button[aria-pressed='true'] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .count { color: var(--muted); margin-bottom: 1.5rem; }
+  [hidden] { display: none !important; }
+</style>

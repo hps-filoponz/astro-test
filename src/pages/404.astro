@@ -1,9 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
 import { url } from '../lib/url';
 ---
 
 <Base title="Page not found">
-  <h1>Page not found</h1>
-  <p>That page doesn't exist. <a href={url('/')}>Go to the home page</a>.</p>
+  <section class="section">
+    <div class="container narrow lost">
+      <Icon name="coffee" size={56} />
+      <h1>This page has gone cold</h1>
+      <p>We couldn't find that page. It may have moved, or the link may be wrong.</p>
+      <a class="btn" href={url('/')}>Back to the home page</a>
+    </div>
+  </section>
 </Base>
+
+<style>
+  .lost { text-align: center; padding: 3rem 0; }
+  .lost :global(svg) { color: var(--accent); margin: 0 auto 1.5rem; }
+  p { color: var(--muted); font-size: 1.1rem; }
+</style>

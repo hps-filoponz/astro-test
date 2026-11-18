@@ -1,0 +1,99 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Icon from '../components/Icon.astro';
+
+const details = [
+  { icon: 'map-pin', title: 'Roastery', text: 'Unit 4, Riverside Yard' },
+  { icon: 'clock', title: 'Open to visitors', text: 'Saturdays, 9am to 2pm' },
+  { icon: 'mail', title: 'Email', text: 'hello@example.com' },
+];
+---
+
+<Base title="Contact" description="Get in touch with Northbank Roasters.">
+  <PageHeader
+    eyebrow="Contact"
+    title="Say hello"
+    intro="Questions about an order, wholesale or a visit? We reply within one working day."
+  />
+
+  <section class="section">
+    <div class="container layout">
+      <aside class="details">
+        {details.map((d) => (
+          <div class="detail">
+            <span class="icon"><Icon name={d.icon} size={22} /></span>
+            <div>
+              <strong>{d.title}</strong>
+              <p>{d.text}</p>
+            </div>
+          </div>
+        ))}
+      </aside>
+
+      <!-- Static demo form: it has no backend yet, so submitting shows a message only. -->
+      <form class="card form" id="contact-form">
+        <div class="row">
+          <label>Name <input name="name" type="text" autocomplete="name" required /></label>
+          <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+        </div>
+        <label>
+          Topic
+          <select name="topic">
+            <option>An order</option>
+            <option>Subscriptions</option>
+            <option>Wholesale</option>
+            <option>Something else</option>
+          </select>
+        </label>
+        <label>Message <textarea name="message" rows="5" required></textarea></label>
+        <button class="btn" type="submit">Send message <Icon name="arrow-right" size={18} /></button>
+        <p class="note" id="form-note" role="status"></p>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const note = document.getElementById('form-note');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (note) note.textContent = 'Thanks! This is a demo form, so nothing was sent.';
+    form.reset();
+  });
+</script>
+
+<style>
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 3rem; align-items: start; }
+  @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+  .details { display: grid; gap: 1.5rem; }
+  .detail { display: flex; gap: 1rem; }
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #f7e6dc;
+    color: var(--accent);
+  }
+  .detail p { margin: 0; color: var(--muted); }
+  .form { padding: 2rem; display: grid; gap: 1.2rem; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+  label { display: grid; gap: 0.4rem; font-weight: 600; font-size: 0.95rem; }
+  input, select, textarea {
+    font: inherit;
+    font-weight: 400;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--cream);
+    color: var(--ink);
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  .btn { justify-self: start; }
+  .note { margin: 0; color: var(--accent); font-weight: 600; min-height: 1.5em; }
+</style>

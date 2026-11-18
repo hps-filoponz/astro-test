@@ -1,11 +1,88 @@
 ---
 import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Icon from '../components/Icon.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { story, unsplash } from '../data/site';
+
+const timeline = [
+  { year: '2019', text: 'First roasts on a 1kg machine in a garage.' },
+  { year: '2021', text: 'Moved into Riverside Yard and bought a 15kg roaster.' },
+  { year: '2023', text: 'Started buying direct from 3 farms in Colombia and Ethiopia.' },
+  { year: '2026', text: 'Now roasting for 40 cafés and around 1,200 home subscribers.' },
+];
+
+const values = [
+  { icon: 'leaf', title: 'Pay fairly', text: 'We publish what we pay for green beans on every product page.' },
+  { icon: 'flame', title: 'Roast lightly', text: 'We roast to show off where a coffee comes from, not to hide it.' },
+  { icon: 'package', title: 'Waste less', text: 'Compostable bags, reused shipping boxes and coffee chaff sent to local allotments.' },
+];
 ---
 
-<Base title="About" description="About this Astro experiment.">
-  <h1>About</h1>
-  <p>
-    A sandbox for testing Astro: layouts, components, content collections and
-    deploying to GitHub Pages.
-  </p>
+<Base title="Our story" description="How a garage roaster became Northbank Roasters.">
+  <PageHeader
+    eyebrow="Our story"
+    title="From a garage roaster to Riverside Yard"
+    intro="Northbank started with a 1kg roaster and a lot of burnt beans. Here's how we got here."
+  />
+
+  <section class="section section--white">
+    <div class="container split">
+      <img src={unsplash(story.image, 900, 700)} width="900" height="700" alt={story.alt} loading="lazy" />
+      <div>
+        <h2>Timeline</h2>
+        <ol class="timeline">
+          {timeline.map((t) => (
+            <li>
+              <strong>{t.year}</strong>
+              <span>{t.text}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">What we care about</span>
+        <h2>Three rules we roast by</h2>
+      </div>
+      <div class="grid grid--3">
+        {values.map((v) => (
+          <div class="card value">
+            <Icon name={v.icon} size={30} />
+            <h3>{v.title}</h3>
+            <p>{v.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
 </Base>
+
+<style>
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+  @media (max-width: 820px) { .split { grid-template-columns: 1fr; } }
+  .split img { border-radius: var(--radius); width: 100%; aspect-ratio: 9 / 7; object-fit: cover; }
+  .timeline { list-style: none; padding: 0; margin: 0; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 1.5rem 1.5rem; display: grid; }
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 0.35rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .timeline strong { font-family: var(--serif); font-size: 1.3rem; }
+  .timeline span { color: var(--muted); }
+  .value { padding: 1.75rem; }
+  .value :global(svg) { color: var(--accent); margin-bottom: 1rem; }
+  .value p { color: var(--muted); margin: 0; }
+</style>

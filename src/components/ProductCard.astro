@@ -1,0 +1,91 @@
+---
+import Icon from './Icon.astro';
+import { formatPrice, unsplash, type Product } from '../data/site';
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+const roastLevel = { Light: 1, Medium: 2, Dark: 3 }[product.roast];
+---
+
+<article class="card product" data-roast={product.roast}>
+  <div class="media">
+    <img
+      src={unsplash(product.image, 640, 480)}
+      srcset={`${unsplash(product.image, 400, 300)} 400w, ${unsplash(product.image, 800, 600)} 800w`}
+      sizes="(max-width: 600px) 100vw, 320px"
+      width="640"
+      height="480"
+      alt={product.alt}
+      loading="lazy"
+      decoding="async"
+    />
+    <span class="badge">{product.roast} roast</span>
+  </div>
+  <div class="body">
+    <p class="origin">{product.origin}</p>
+    <h3>{product.name}</h3>
+    <ul class="notes">
+      {product.notes.map((note) => <li>{note}</li>)}
+    </ul>
+    <div class="roast" aria-label={`Roast level ${roastLevel} of 3`}>
+      {[1, 2, 3].map((n) => <span class:list={{ on: n <= roastLevel }} />)}
+    </div>
+    <div class="foot">
+      <span class="price">{formatPrice(product.price)} <small>/ 250g</small></span>
+      <button class="add" type="button" aria-label={`Add ${product.name} to basket`}>
+        <Icon name="plus" size={20} />
+      </button>
+    </div>
+  </div>
+</article>
+
+<style>
+  .product { display: flex; flex-direction: column; transition: transform 0.25s, box-shadow 0.25s; }
+  .product:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgb(36 27 22 / 14%); }
+  .media { position: relative; aspect-ratio: 4 / 3; background: var(--line); }
+  .media img { width: 100%; height: 100%; object-fit: cover; }
+  .badge {
+    position: absolute;
+    top: 0.9rem;
+    left: 0.9rem;
+    background: rgb(255 255 255 / 92%);
+    color: var(--ink);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+  }
+  .body { padding: 1.25rem 1.25rem 1.4rem; display: flex; flex-direction: column; flex: 1; }
+  .origin { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.2rem; }
+  h3 { margin-bottom: 0.6rem; }
+  .notes { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .notes li {
+    font-size: 0.8rem;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+  .roast { display: flex; gap: 0.3rem; margin-bottom: 1.2rem; }
+  .roast span { width: 26px; height: 6px; border-radius: 3px; background: var(--line); }
+  .roast span.on { background: var(--accent); }
+  .foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+  .price { font-weight: 700; font-size: 1.15rem; }
+  .price small { font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+  .add {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 0;
+    background: var(--ink);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .add:hover { background: var(--accent); }
+</style>

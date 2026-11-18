@@ -15,12 +15,17 @@ const fmt = new Intl.DateTimeFormat('en-GB', { dateStyle: 'long' });
 ---
 
 <Base title={post.data.title} description={post.data.description}>
-  <p class="meta">{fmt.format(post.data.date)}</p>
-  <h1>{post.data.title}</h1>
-  <Content />
-  <p><a href={url('/blog/')}>Back to all posts</a></p>
+  <article class="section">
+    <div class="container narrow prose">
+      <a class="back" href={url('/blog/')}>Back to the journal</a>
+      <p class="meta">{fmt.format(post.data.date)}</p>
+      <h1>{post.data.title}</h1>
+      <Content />
+    </div>
+  </article>
 </Base>
 
 <style>
+  .back { display: inline-block; margin-bottom: 2rem; font-weight: 600; text-decoration: none; }
   .meta { color: var(--muted); margin: 0 0 0.5rem; }
 </style>
