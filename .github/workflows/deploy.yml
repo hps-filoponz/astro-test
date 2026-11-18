@@ -3,6 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    # WordPress plugin files are not part of the Astro build
+    paths-ignore: ['wordpress/**', 'README.md']
   workflow_dispatch:
   # Sent by WordPress when content changes
   repository_dispatch:
