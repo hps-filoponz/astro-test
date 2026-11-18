@@ -2,6 +2,10 @@
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
 import Icon from '../components/Icon.astro';
+import { CMS_URL } from '../lib/wordpress';
+
+// Submissions go to the Astro Forms plugin on the headless WordPress site
+const endpoint = `${CMS_URL}/wp-json/astro/v1/form/contact`;
 
 const details = [
   { icon: 'map-pin', title: 'Roastery', text: 'Unit 4, Riverside Yard' },
@@ -18,7 +22,7 @@ const details = [
   />
 
   <section class="section">
-    <div class="container layout">
+    <div class="container layout" style="position: relative">
       <aside class="details">
         {details.map((d) => (
           <div class="detail">
@@ -31,11 +35,10 @@ const details = [
         ))}
       </aside>
 
-      <!-- Static demo form: it has no backend yet, so submitting shows a message only. -->
-      <form class="card form" id="contact-form">
+      <form class="card form" id="contact-form" action={endpoint} method="post" novalidate>
         <div class="row">
-          <label>Name <input name="name" type="text" autocomplete="name" required /></label>
-          <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+          <label>Name <input name="name" type="text" autocomplete="name" required maxlength="200" /><span class="err" data-for="name"></span></label>
+          <label>Email <input name="email" type="email" autocomplete="email" required maxlength="200" /><span class="err" data-for="email"></span></label>
         </div>
         <label>
           Topic
@@ -46,9 +49,17 @@ const details = [
             <option>Something else</option>
           </select>
         </label>
-        <label>Message <textarea name="message" rows="5" required></textarea></label>
+        <label>Message <textarea name="message" rows="5" required maxlength="5000"></textarea><span class="err" data-for="message"></span></label>
+
+        <!-- Spam traps: real people never see or fill these -->
+        <div class="hp" aria-hidden="true">
+          <label>Website <input name="website" type="text" tabindex="-1" autocomplete="off" /></label>
+        </div>
+        <input type="hidden" name="_started" />
+        <input type="hidden" name="_page" />
+
         <button class="btn" type="submit">Send message <Icon name="arrow-right" size={18} /></button>
-        <p class="note" id="form-note" role="status"></p>
+        <p class="note" id="form-note" role="status" aria-live="polite"></p>
       </form>
     </div>
   </section>
@@ -57,11 +68,66 @@ const details = [
 <script>
   const form = document.getElementById('contact-form') as HTMLFormElement | null;
   const note = document.getElementById('form-note');
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (note) note.textContent = 'Thanks! This is a demo form, so nothing was sent.';
-    form.reset();
-  });
+
+  if (form && note) {
+    const started = form.querySelector<HTMLInputElement>('[name=_started]')!;
+    const page = form.querySelector<HTMLInputElement>('[name=_page]')!;
+    const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    // The page is built ahead of time, so the start time is set when the visitor loads it.
+    started.value = String(Date.now());
+    page.value = location.href;
+
+    const showErrors = (errors: Record<string, string> = {}) => {
+      form.querySelectorAll<HTMLElement>('.err').forEach((el) => {
+        const msg = errors[el.dataset.for ?? ''] ?? '';
+        el.textContent = msg;
+        el.previousElementSibling?.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      });
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Quick checks in the browser first; WordPress checks again.
+      const local: Record<string, string> = {};
+      for (const name of ['name', 'email', 'message']) {
+        const field = form.elements.namedItem(name) as HTMLInputElement;
+        if (!field.value.trim()) local[name] = 'This field is required.';
+        else if (name === 'email' && !field.validity.valid) local[name] = 'Please enter a valid email address.';
+      }
+      showErrors(local);
+      if (Object.keys(local).length) {
+        note.textContent = 'Please check the highlighted fields.';
+        note.dataset.state = 'error';
+        return;
+      }
+
+      button.disabled = true;
+      note.textContent = 'Sending...';
+      note.dataset.state = '';
+
+      try {
+        // FormData keeps this a "simple" request, so the browser skips the CORS preflight.
+        const res = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          form.reset();
+          started.value = String(Date.now());
+          note.textContent = data.message;
+          note.dataset.state = 'ok';
+        } else {
+          showErrors(data.errors);
+          note.textContent = data.message ?? 'Something went wrong. Please try again.';
+          note.dataset.state = 'error';
+        }
+      } catch {
+        note.textContent = 'Could not send. Check your connection, or email hello@example.com.';
+        note.dataset.state = 'error';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
 </script>
 
 <style>
@@ -95,5 +161,11 @@ const details = [
   }
   input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
   .btn { justify-self: start; }
-  .note { margin: 0; color: var(--accent); font-weight: 600; min-height: 1.5em; }
+  .note { margin: 0; font-weight: 600; min-height: 1.5em; }
+  .note[data-state='ok'] { color: #2f7a3e; }
+  .note[data-state='error'] { color: #b42318; }
+  .err { color: #b42318; font-size: 0.85rem; font-weight: 500; min-height: 0; }
+  [aria-invalid='true'] { border-color: #b42318; }
+  button:disabled { opacity: 0.6; cursor: wait; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 </style>
