@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import Icon from './Icon.astro';
+import CoffeeImage from './CoffeeImage.astro';
 import { formatPrice } from '../data/site';
 import { url } from '../lib/url';
 
@@ -16,18 +17,7 @@ const roastLevel = { Light: 1, Medium: 2, Dark: 3 }[c.roast];
 
 <article class="card product" data-roast={c.roast}>
   <div class="media">
-    {c.image && (
-      <img
-        src={c.image.src}
-        srcset={c.image.srcset}
-        sizes="(max-width: 600px) 100vw, 320px"
-        width={c.image.width}
-        height={c.image.height}
-        alt={c.image.alt}
-        loading="lazy"
-        decoding="async"
-      />
-    )}
+    {c.image && <CoffeeImage coffee={coffee} sizes="(max-width: 600px) 100vw, 320px" widths={[400, 640]} />}
     <span class="badge">{c.roast} roast</span>
   </div>
   <div class="body">
@@ -54,7 +44,7 @@ const roastLevel = { Light: 1, Medium: 2, Dark: 3 }[c.roast];
   .product { position: relative; display: flex; flex-direction: column; transition: transform 0.25s, box-shadow 0.25s; }
   .product:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgb(36 27 22 / 14%); }
   .media { position: relative; aspect-ratio: 4 / 3; background: var(--line); }
-  .media img { width: 100%; height: 100%; object-fit: cover; }
+  .media :global(img) { width: 100%; height: 100%; object-fit: cover; }
   .badge {
     position: absolute;
     top: 0.9rem;

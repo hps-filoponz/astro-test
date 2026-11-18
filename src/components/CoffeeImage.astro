@@ -1,0 +1,52 @@
+---
+// Renders a coffee image.
+// WordPress images: Astro downloads them at build time, resizes them and
+// converts them to WebP, so visitors never load anything from the CMS.
+// Sample images (local builds without WordPress): plain <img>.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  coffee: CollectionEntry<'coffee'>;
+  sizes: string;
+  widths?: number[];
+  priority?: boolean;
+}
+
+const { coffee, sizes, widths = [400, 640, 960], priority = false } = Astro.props;
+const img = coffee.data.image!;
+const isWordPress = coffee.data.source === 'wordpress';
+
+// Never ask for a width bigger than the original upload
+const usable = widths.filter((w) => w <= img.width);
+const finalWidths = usable.length ? usable : [img.width];
+const loading = priority ? 'eager' : 'lazy';
+---
+
+{
+  isWordPress ? (
+    <Image
+      src={img.src}
+      alt={img.alt}
+      width={img.width}
+      height={img.height}
+      widths={finalWidths}
+      sizes={sizes}
+      format="webp"
+      quality={78}
+      loading={loading}
+      fetchpriority={priority ? 'high' : undefined}
+    />
+  ) : (
+    <img
+      src={img.src}
+      srcset={img.srcset}
+      sizes={sizes}
+      width={img.width}
+      height={img.height}
+      alt={img.alt}
+      loading={loading}
+      decoding="async"
+    />
+  )
+}
