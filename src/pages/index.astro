@@ -4,7 +4,13 @@ import Icon from '../components/Icon.astro';
 import ProductCard from '../components/ProductCard.astro';
 import Faq from '../components/Faq.astro';
 import CtaBand from '../components/CtaBand.astro';
-import { brewGuides, features, hero, products, stats, story, unsplash } from '../data/site';
+import { brewGuides, features, hero, stats, story, unsplash } from '../data/site';
+import { getCollection } from 'astro:content';
+
+// Latest 4 coffees from WordPress
+const coffees = (await getCollection('coffee'))
+  .sort((a, b) => b.data.updated.localeCompare(a.data.updated))
+  .slice(0, 4);
 import { url } from '../lib/url';
 ---
 
@@ -64,7 +70,7 @@ import { url } from '../lib/url';
         <a class="link-arrow" href={url('/shop/')}>See all coffee <Icon name="arrow-right" size={18} /></a>
       </div>
       <div class="grid grid--4">
-        {products.map((product) => <ProductCard product={product} />)}
+        {coffees.map((coffee) => <ProductCard coffee={coffee} />)}
       </div>
     </div>
   </section>

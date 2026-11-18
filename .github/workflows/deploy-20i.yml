@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Sent by WordPress when content changes
+  repository_dispatch:
+    types: [cms-update]
 
 concurrency:
   group: deploy-20i
@@ -14,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEPLOY_TARGET: 20i
+      CMS_REQUIRED: 'true'
     steps:
       - uses: actions/checkout@v4
 

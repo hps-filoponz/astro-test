@@ -1,8 +1,8 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { loadCoffee } from './lib/wordpress';
 
 // Every Markdown file in src/content/blog becomes a blog post.
-// The schema checks the frontmatter at build time.
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
   schema: z.object({
@@ -13,4 +13,29 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+// Coffee comes from headless WordPress at build time.
+// The schema checks WordPress gave us what the pages expect.
+const coffee = defineCollection({
+  loader: loadCoffee,
+  schema: z.object({
+    name: z.string(),
+    origin: z.string(),
+    roast: z.enum(['Light', 'Medium', 'Dark']),
+    price: z.number(),
+    notes: z.array(z.string()),
+    description: z.string(),
+    image: z
+      .object({
+        src: z.string(),
+        srcset: z.string().optional(),
+        width: z.number(),
+        height: z.number(),
+        alt: z.string(),
+      })
+      .nullable(),
+    updated: z.string(),
+    source: z.enum(['wordpress', 'sample']),
+  }),
+});
+
+export const collections = { blog, coffee };

@@ -1,41 +1,49 @@
 ---
+import type { CollectionEntry } from 'astro:content';
 import Icon from './Icon.astro';
-import { formatPrice, unsplash, type Product } from '../data/site';
+import { formatPrice } from '../data/site';
+import { url } from '../lib/url';
 
 interface Props {
-  product: Product;
+  coffee: CollectionEntry<'coffee'>;
 }
 
-const { product } = Astro.props;
-const roastLevel = { Light: 1, Medium: 2, Dark: 3 }[product.roast];
+const { coffee } = Astro.props;
+const c = coffee.data;
+const href = url(`/shop/${coffee.id}/`);
+const roastLevel = { Light: 1, Medium: 2, Dark: 3 }[c.roast];
 ---
 
-<article class="card product" data-roast={product.roast}>
+<article class="card product" data-roast={c.roast}>
   <div class="media">
-    <img
-      src={unsplash(product.image, 640, 480)}
-      srcset={`${unsplash(product.image, 400, 300)} 400w, ${unsplash(product.image, 800, 600)} 800w`}
-      sizes="(max-width: 600px) 100vw, 320px"
-      width="640"
-      height="480"
-      alt={product.alt}
-      loading="lazy"
-      decoding="async"
-    />
-    <span class="badge">{product.roast} roast</span>
+    {c.image && (
+      <img
+        src={c.image.src}
+        srcset={c.image.srcset}
+        sizes="(max-width: 600px) 100vw, 320px"
+        width={c.image.width}
+        height={c.image.height}
+        alt={c.image.alt}
+        loading="lazy"
+        decoding="async"
+      />
+    )}
+    <span class="badge">{c.roast} roast</span>
   </div>
   <div class="body">
-    <p class="origin">{product.origin}</p>
-    <h3>{product.name}</h3>
-    <ul class="notes">
-      {product.notes.map((note) => <li>{note}</li>)}
-    </ul>
+    {c.origin && <p class="origin">{c.origin}</p>}
+    <h3><a class="stretched" href={href}>{c.name}</a></h3>
+    {c.notes.length > 0 && (
+      <ul class="notes">
+        {c.notes.map((note) => <li>{note}</li>)}
+      </ul>
+    )}
     <div class="roast" aria-label={`Roast level ${roastLevel} of 3`}>
       {[1, 2, 3].map((n) => <span class:list={{ on: n <= roastLevel }} />)}
     </div>
     <div class="foot">
-      <span class="price">{formatPrice(product.price)} <small>/ 250g</small></span>
-      <button class="add" type="button" aria-label={`Add ${product.name} to basket`}>
+      <span class="price">{formatPrice(c.price)} <small>/ 250g</small></span>
+      <button class="add" type="button" aria-label={`Add ${c.name} to basket`}>
         <Icon name="plus" size={20} />
       </button>
     </div>
@@ -43,7 +51,7 @@ const roastLevel = { Light: 1, Medium: 2, Dark: 3 }[product.roast];
 </article>
 
 <style>
-  .product { display: flex; flex-direction: column; transition: transform 0.25s, box-shadow 0.25s; }
+  .product { position: relative; display: flex; flex-direction: column; transition: transform 0.25s, box-shadow 0.25s; }
   .product:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgb(36 27 22 / 14%); }
   .media { position: relative; aspect-ratio: 4 / 3; background: var(--line); }
   .media img { width: 100%; height: 100%; object-fit: cover; }
@@ -61,6 +69,9 @@ const roastLevel = { Light: 1, Medium: 2, Dark: 3 }[product.roast];
   .body { padding: 1.25rem 1.25rem 1.4rem; display: flex; flex-direction: column; flex: 1; }
   .origin { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.2rem; }
   h3 { margin-bottom: 0.6rem; }
+  .stretched { color: inherit; text-decoration: none; }
+  .stretched::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+  .stretched:hover { color: var(--accent); }
   .notes { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .notes li {
     font-size: 0.8rem;
@@ -76,6 +87,8 @@ const roastLevel = { Light: 1, Medium: 2, Dark: 3 }[product.roast];
   .price { font-weight: 700; font-size: 1.15rem; }
   .price small { font-weight: 400; color: var(--muted); font-size: 0.8rem; }
   .add {
+    position: relative;
+    z-index: 2;
     width: 42px;
     height: 42px;
     border-radius: 50%;
