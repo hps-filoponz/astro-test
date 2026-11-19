@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Astro Fluent Forms
  * Description: Lets the Astro site submit to Fluent Forms. Entries, email notifications and integrations all run in Fluent Forms as normal.
- * Version: 1.0.0
+ * Version: 1.0.1
  *
  * Install: upload to wp-content/mu-plugins/astro-fluentforms.php (needs Fluent Forms active).
  * Endpoint: POST /wp-json/fluentform/v1/astro-submit
@@ -31,6 +31,34 @@ function astro_ff_origins() {
 	return array_filter( array_map( 'untrailingslashit', array_map( 'trim', explode( ',', $list ) ) ) );
 }
 
+/**
+ * CORS: let the Astro sites read the reply.
+ * Without Access-Control-Allow-Origin the submission still reaches Fluent Forms,
+ * but the browser hides the response, so the page can't show success or errors.
+ * Only our own origins get the header, never a wildcard.
+ */
+function astro_ff_send_cors_headers() {
+	$origin = untrailingslashit( (string) ( $_SERVER['HTTP_ORIGIN'] ?? '' ) );
+	if ( $origin && in_array( $origin, astro_ff_origins(), true ) && ! headers_sent() ) {
+		header( 'Access-Control-Allow-Origin: ' . $origin );
+		header( 'Access-Control-Allow-Methods: POST, OPTIONS' );
+		header( 'Vary: Origin', false );
+	}
+}
+
+// Runs as WordPress serves any REST response (including preflight OPTIONS) for this route.
+add_filter(
+	'rest_pre_serve_request',
+	function ( $served, $result, $request ) {
+		if ( '/fluentform/v1/astro-submit' === $request->get_route() ) {
+			astro_ff_send_cors_headers();
+		}
+		return $served;
+	},
+	20,
+	3
+);
+
 function astro_ff_allowed_forms() {
 	return defined( 'ASTRO_FLUENT_FORMS' ) ? array_map( 'intval', explode( ',', ASTRO_FLUENT_FORMS ) ) : array();
 }
@@ -41,6 +69,9 @@ add_action(
 		$app->router->post(
 			'/astro-submit',
 			function () use ( $app ) {
+				// Also send CORS headers here, in case Fluent Forms replies before the filter above runs.
+				astro_ff_send_cors_headers();
+
 				$fail = function ( $message, $status, $errors = array() ) use ( $app ) {
 					return $app->response->json(
 						array( 'ok' => false, 'message' => $message, 'errors' => (object) $errors ),

@@ -103,3 +103,7 @@ Review, cut and correct before using them as the skill's source.
   plus form_id, _started (set by JS on load, as the page is prebuilt) and _page.
 - FF validation errors come back per field; the page shows them under each input.
 - Replaced the earlier custom astro-forms.php plugin (own entries CPT + wp_mail).
+- CORS gotcha: on 20i the REST replies had no Access-Control-Allow-Origin header (not even core routes),
+  so the submission saved but the browser hid the reply and the page showed a network error.
+  Fix: the plugin sends Access-Control-Allow-Origin for allow-listed origins only (v1.0.1).
+  Check with: curl -i -X POST -H "Origin: https://site" -F form_id=999 .../astro-submit
