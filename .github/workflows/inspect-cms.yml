@@ -1,0 +1,12 @@
+name: Inspect CMS (temporary)
+on: workflow_dispatch
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          U=https://cms-astrotest-com.stackstaging.com/wp-json/fluentform/v1/astro-submit
+          echo "== POST with allowed origin, form 999 (rejected before Fluent Forms, no entry)"
+          curl -sS -i -X POST -H "Origin: https://astrotest-com.stackstaging.com" -F form_id=999 "$U" | sed -n '1,40p'
+          echo; echo "== standard WP route for comparison"
+          curl -sS -I -H "Origin: https://astrotest-com.stackstaging.com" "https://cms-astrotest-com.stackstaging.com/wp-json/wp/v2/coffee?per_page=1" | grep -i -E "^HTTP|access-control|vary"
